@@ -1,0 +1,23 @@
+{
+  "name": "@openfuse/fuse",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "optionalDependencies": {
+    "fuse-native": "^2.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node && tsc -p ./tsconfig.json",
+    "test": "bun test"
+  }
+}

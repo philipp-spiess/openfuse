@@ -1,0 +1,15 @@
+services:
+  test-linux:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - "/dev/fuse:/dev/fuse"
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: ["bun", "test"]

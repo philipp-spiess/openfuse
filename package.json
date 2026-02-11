@@ -1,0 +1,17 @@
+{
+  "name": "openfuse-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "packages/@openfuse/*"
+  ],
+  "scripts": {
+    "build": "bun run --workspaces build",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "bun-types": "^1.3.5",
+    "typescript": "^5.8.2"
+  }
+}

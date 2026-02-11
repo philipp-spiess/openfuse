@@ -1,0 +1,35 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            test-type: all
+          - os: macos-latest
+            test-type: unit
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install FUSE (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fuse3 libfuse3-dev
+          sudo modprobe fuse
+
+      - run: bun install
+
+      - name: Unit tests
+        run: bun test --filter core
+
+      - name: Integration tests (Linux only)
+        if: matrix.test-type == 'all'
+        run: bun test --filter mount
