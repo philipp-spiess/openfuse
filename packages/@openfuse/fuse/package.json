@@ -17,7 +17,8 @@
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --target node && tsc -p ./tsconfig.json",
+    "prebuild:bridge": "cc -shared -o src/bridge/fuse_bridge.so src/bridge/fuse_bridge.c $(pkg-config --cflags --libs fuse) -fPIC",
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --external fuse-native --external bun:ffi && tsc -p ./tsconfig.json",
     "test": "bun test"
   }
 }

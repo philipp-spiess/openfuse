@@ -1,5 +1,6 @@
 services:
-  test-linux:
+  test-node:
+    # Native arm64 — fuse-native compiled from source
     build:
       context: .
       dockerfile: Dockerfile.test
@@ -9,7 +10,4 @@ services:
       - "/dev/fuse:/dev/fuse"
     security_opt:
       - apparmor:unconfined
-    volumes:
-      - ./:/app
-    working_dir: /app
-    command: ["bun", "test"]
+    command: ["node", "test/node-mount-test.mjs"]

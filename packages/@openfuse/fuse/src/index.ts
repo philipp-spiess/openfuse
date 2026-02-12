@@ -1,8 +1,23 @@
 export interface FileSystemHandlers {
   activate(): { id: bigint; attributes: { type: number } };
-  lookup(name: string, directoryId: bigint): { id: bigint };
-  getAttributes(itemId: bigint): { type: number; size: bigint; mode: number };
-  readdir(directoryId: bigint, cookie: bigint): { entries: Array<{ nextCookie: bigint }> };
+  lookup(name: string, directoryId: bigint): { id: bigint; name: string };
+  getAttributes(itemId: bigint): {
+    type: number;
+    size: bigint;
+    mode: number;
+    uid?: number;
+    gid?: number;
+    modifyTime?: Date;
+    accessTime?: Date;
+    createTime?: Date;
+    linkCount?: number;
+  };
+  readdir(directoryId: bigint, cookie: bigint): {
+    entries: Array<{
+      item: { id: bigint; name: string };
+      nextCookie: bigint;
+    }>;
+  };
   read(itemId: bigint, offset: bigint, length: bigint): Buffer;
   write(itemId: bigint, offset: bigint, data: Buffer): bigint;
   create(name: string, type: number, directoryId: bigint, mode: number): { id: bigint };
