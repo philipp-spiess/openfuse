@@ -6,30 +6,54 @@ jobs:
   test:
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            test-type: all
-          - os: macos-latest
-            test-type: unit
+        os: [ubuntu-latest, macos-latest]
+        runtime: [bun, node]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+
+      - name: Setup Bun
+        if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Node
+        if: matrix.runtime == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies (Bun)
+        if: matrix.runtime == 'bun'
+        run: bun install
+
+      - name: Install dependencies (Node)
+        if: matrix.runtime == 'node'
+        run: npm install
 
       - name: Install FUSE (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y fuse3 libfuse3-dev
-          sudo modprobe fuse
+          sudo apt-get install -y libfuse-dev fuse3
 
-      - run: bun install
+      - name: Install FUSE (macOS)
+        if: runner.os == 'macOS'
+        run: brew install macfuse
 
-      - name: Unit tests
-        run: bun test --filter core
+      - name: Unit tests (Bun)
+        if: matrix.runtime == 'bun'
+        run: bunx vitest run
 
-      - name: Integration tests (Linux only)
-        if: matrix.test-type == 'all'
-        run: bun test --filter mount
+      - name: Unit tests (Node)
+        if: matrix.runtime == 'node'
+        run: npx vitest run
+
+      - name: Mount tests (Linux + Bun)
+        if: runner.os == 'Linux' && matrix.runtime == 'bun'
+        run: OPENFUSE_RUN_MOUNT_TESTS=1 bunx vitest run packages/openfuse/test/mount.test.ts
+
+      - name: Mount tests (Linux + Node)
+        if: runner.os == 'Linux' && matrix.runtime == 'node'
+        run: OPENFUSE_RUN_MOUNT_TESTS=1 npx vitest run packages/openfuse/test/mount.test.ts

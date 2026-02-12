@@ -7,11 +7,14 @@
   ],
   "scripts": {
     "build": "bun run --workspaces build",
-    "test": "bun test"
+    "test:unit": "vitest run --reporter verbose packages/openfuse/test/core.test.ts",
+    "test:mount": "OPENFUSE_RUN_MOUNT_TESTS=1 vitest run packages/openfuse/test/mount.test.ts",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",
     "bun-types": "^1.3.5",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^4.0.18"
   }
 }
