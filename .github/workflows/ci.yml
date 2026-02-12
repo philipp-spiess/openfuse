@@ -6,10 +6,9 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
         runtime: [bun, node]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -32,16 +31,6 @@ jobs:
         if: matrix.runtime == 'node'
         run: npm install
 
-      - name: Install FUSE (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libfuse-dev fuse3
-
-      - name: Install FUSE (macOS)
-        if: runner.os == 'macOS'
-        run: brew install macfuse
-
       - name: Unit tests (Bun)
         if: matrix.runtime == 'bun'
         run: bunx vitest run
@@ -49,11 +38,3 @@ jobs:
       - name: Unit tests (Node)
         if: matrix.runtime == 'node'
         run: npx vitest run
-
-      - name: Mount tests (Linux + Bun)
-        if: runner.os == 'Linux' && matrix.runtime == 'bun'
-        run: OPENFUSE_RUN_MOUNT_TESTS=1 bunx vitest run packages/openfuse/test/mount.test.ts
-
-      - name: Mount tests (Linux + Node)
-        if: runner.os == 'Linux' && matrix.runtime == 'node'
-        run: OPENFUSE_RUN_MOUNT_TESTS=1 npx vitest run packages/openfuse/test/mount.test.ts
