@@ -22,7 +22,11 @@ jobs:
       - name: Unit tests (Bun)
         run: bun test packages/openfuse/test/core.test.ts
 
-  e2e-linux-node:
+  e2e-linux:
+    strategy:
+      matrix:
+        runtime: [node, bun]
+
     runs-on: ubuntu-latest
 
     steps:
@@ -32,6 +36,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Setup Node
+        if: matrix.runtime == 'node'
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -40,11 +45,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libfuse-dev fuse3 pkg-config python3 make g++
+          sudo modprobe fuse || true
+          ls -l /dev/fuse || true
 
       - name: Install workspace dependencies (Bun)
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Install fuse-native for Node backend
+        if: matrix.runtime == 'node'
         run: |
           mkdir -p /tmp/openfuse-fuse-deps
           npm install --prefix /tmp/openfuse-fuse-deps fuse-native
@@ -52,8 +60,19 @@ jobs:
           rm -rf packages/@openfuse/fuse/node_modules/fuse-native
           ln -s /tmp/openfuse-fuse-deps/node_modules/fuse-native packages/@openfuse/fuse/node_modules/fuse-native
 
+      - name: Build Bun FFI bridge
+        if: matrix.runtime == 'bun'
+        run: |
+          cc -shared -o packages/@openfuse/fuse/src/bridge/fuse_bridge.so packages/@openfuse/fuse/src/bridge/fuse_bridge.c \
+            $(pkg-config --cflags --libs fuse) -fPIC -pthread
+
       - name: Build packages
         run: bun run build
 
       - name: Run e2e mount test (Node)
+        if: matrix.runtime == 'node'
         run: node tests/node-mount-test.ts
+
+      - name: Run e2e mount test (Bun)
+        if: matrix.runtime == 'bun'
+        run: bun tests/node-mount-test.ts

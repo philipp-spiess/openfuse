@@ -107,6 +107,9 @@ bun run build
 
 # Run Linux mount e2e script (Node.js 22+, requires FUSE)
 node tests/node-mount-test.ts
+
+# Run Linux mount e2e script (Bun runtime, requires FUSE + compiled bridge)
+bun tests/node-mount-test.ts
 ```
 
 ## Docker Linux Test Setup
@@ -119,7 +122,7 @@ docker compose -f docker-compose.test.yml up --build
 
 GitHub Actions runs:
 - Unit tests with `bun test` on Ubuntu + macOS
-- Linux mount e2e script (`node tests/node-mount-test.ts`)
+- Linux mount e2e script on both Node and Bun (`tests/node-mount-test.ts`)
 
 ## License
 

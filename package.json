@@ -10,6 +10,8 @@
     "build": "bun run --workspaces build",
     "test:unit": "bun test packages/openfuse/test/core.test.ts",
     "test:e2e": "node tests/node-mount-test.ts",
+    "test:e2e:node": "node tests/node-mount-test.ts",
+    "test:e2e:bun": "bun tests/node-mount-test.ts",
     "test": "bun test"
   },
   "devDependencies": {
