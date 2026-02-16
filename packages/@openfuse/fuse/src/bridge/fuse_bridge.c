@@ -246,9 +246,8 @@ int fuse_bridge_mount(const char* mountpoint) {
   g_ops.rmdir = bridge_op_rmdir;
 
   char arg0[] = "openfuse";
-  char arg1[] = "-f";
-  char* argv[] = { arg0, arg1 };
-  struct fuse_args args = FUSE_ARGS_INIT(2, argv);
+  char* argv[] = { arg0 };
+  struct fuse_args args = FUSE_ARGS_INIT(1, argv);
 
   struct fuse_chan* chan = fuse_mount(mountpoint, &args);
   if (!chan) {
