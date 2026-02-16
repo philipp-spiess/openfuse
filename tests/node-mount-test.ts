@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { setTimeout } from "node:timers/promises";
 
 // We need to import the built output
-const { createFileSystem, ItemType } = await import("../packages/openfuse/dist/index.js");
+const { createFileSystem } = await import("../packages/openfuse/dist/index.js");
 
 // Import MemoryFileSystem — but it's a .ts file, so we need the built version
 // For now, inline a minimal memory FS for testing
@@ -191,7 +191,7 @@ async function main() {
   console.log("\n✅ All tests passed!");
 }
 
-function assert(condition, message) {
+function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new Error(`Assertion failed: ${message}`);
   }

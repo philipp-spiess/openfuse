@@ -1,6 +1,6 @@
 services:
   test-node:
-    # Native arm64 — fuse-native compiled from source
+    # Node.js e2e runner with /dev/fuse access
     build:
       context: .
       dockerfile: Dockerfile.test
@@ -10,4 +10,4 @@ services:
       - "/dev/fuse:/dev/fuse"
     security_opt:
       - apparmor:unconfined
-    command: ["node", "test/node-mount-test.mjs"]
+    command: ["node", "tests/node-mount-test.ts"]

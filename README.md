@@ -87,6 +87,7 @@ openfuse/
 │       ├── fuse/
 │       └── fskit/
 ├── examples/
+├── tests/
 ├── Dockerfile.test
 ├── docker-compose.test.yml
 └── .github/workflows/ci.yml
@@ -95,17 +96,17 @@ openfuse/
 ## Commands
 
 ```bash
-# Run all tests
+# Run all unit tests (Bun test runner)
 bun test
 
-# Run unit tests only
-bun test --filter core
-
-# Run integration test file (guarded unless OPENFUSE_RUN_MOUNT_TESTS=1)
-bun test --filter mount
+# Run the core unit test file directly
+bun test packages/openfuse/test/core.test.ts
 
 # Build all workspace packages
 bun run build
+
+# Run Linux mount e2e script (Node.js 22+, requires FUSE)
+node tests/node-mount-test.ts
 ```
 
 ## Docker Linux Test Setup
@@ -117,8 +118,8 @@ docker compose -f docker-compose.test.yml up --build
 ## CI
 
 GitHub Actions runs:
-- Ubuntu: unit + mount test suite invocation
-- macOS: unit tests
+- Unit tests with `bun test` on Ubuntu + macOS
+- Linux mount e2e script (`node tests/node-mount-test.ts`)
 
 ## License
 

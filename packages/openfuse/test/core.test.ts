@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "bun:test";
 
 import { PosixError } from "../src/errors";
 import { ItemType } from "../src/types";
