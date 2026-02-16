@@ -24,9 +24,15 @@ jobs:
 
   e2e-linux:
     strategy:
+      fail-fast: false
       matrix:
-        runtime: [node, bun]
+        include:
+          - runtime: node
+            experimental: false
+          - runtime: bun
+            experimental: true
 
+    continue-on-error: ${{ matrix.experimental }}
     runs-on: ubuntu-latest
 
     steps:

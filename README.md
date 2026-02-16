@@ -122,7 +122,7 @@ docker compose -f docker-compose.test.yml up --build
 
 GitHub Actions runs:
 - Unit tests with `bun test` on Ubuntu + macOS
-- Linux mount e2e script on both Node and Bun (`tests/node-mount-test.ts`)
+- Linux mount e2e script on Node (required) and Bun (experimental) (`tests/node-mount-test.ts`)
 
 ## License
 
