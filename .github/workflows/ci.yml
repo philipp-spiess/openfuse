@@ -77,7 +77,24 @@ jobs:
 
       - name: Run e2e mount test (Node)
         if: matrix.runtime == 'node'
-        run: timeout 120s node tests/node-mount-test.ts
+        run: |
+          set -euo pipefail
+          node tests/node-mount-test.ts > /tmp/openfuse-node-e2e.log 2>&1 &
+          pid=$!
+          deadline=$((SECONDS + 120))
+          while kill -0 "$pid" 2>/dev/null; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "Node e2e timed out after 120s"
+              kill -9 "$pid" || true
+              cat /tmp/openfuse-node-e2e.log || true
+              exit 124
+            fi
+            sleep 1
+          done
+          wait "$pid"
+          status=$?
+          cat /tmp/openfuse-node-e2e.log || true
+          exit "$status"
 
       - name: Run e2e mount test (Bun)
         if: matrix.runtime == 'bun'
