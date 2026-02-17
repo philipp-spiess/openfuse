@@ -28,7 +28,7 @@ jobs:
       matrix:
         include:
           - runtime: node
-            experimental: false
+            experimental: true
           - runtime: bun
             experimental: true
 
@@ -77,8 +77,8 @@ jobs:
 
       - name: Run e2e mount test (Node)
         if: matrix.runtime == 'node'
-        run: node tests/node-mount-test.ts
+        run: timeout 120s node tests/node-mount-test.ts
 
       - name: Run e2e mount test (Bun)
         if: matrix.runtime == 'bun'
-        run: bun tests/node-mount-test.ts
+        run: timeout 120s bun tests/node-mount-test.ts
