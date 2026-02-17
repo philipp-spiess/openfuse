@@ -10,15 +10,19 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "dependencies": {
-    "@openfuse/fuse": "workspace:*",
-    "@openfuse/fskit": "workspace:*"
+  "files": [
+    "dist/**/*"
+  ],
+  "optionalDependencies": {
+    "@openfuse/fuse": "^0.0.1",
+    "@openfuse/fskit": "^0.0.1"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --target node --external @openfuse/fuse --external @openfuse/fskit && tsc -p ./tsconfig.json",
+    "build": "rm -rf ./dist && bun build ./src/index.ts --outdir ./dist --target node --external @openfuse/fuse --external @openfuse/fskit && tsc -p ./tsconfig.json",
+    "prepack": "bun run build",
     "test": "bun test"
   }
 }

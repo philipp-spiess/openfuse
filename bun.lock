@@ -33,12 +33,12 @@
     "packages/openfuse": {
       "name": "openfuse",
       "version": "0.0.1",
-      "dependencies": {
-        "@openfuse/fskit": "workspace:*",
-        "@openfuse/fuse": "workspace:*",
-      },
       "devDependencies": {
         "typescript": "^5.8.2",
+      },
+      "optionalDependencies": {
+        "@openfuse/fskit": "^0.0.1",
+        "@openfuse/fuse": "^0.0.1",
       },
     },
   },

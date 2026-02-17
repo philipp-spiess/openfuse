@@ -42,7 +42,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Setup Node
-        if: matrix.runtime == 'node'
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -65,12 +64,6 @@ jobs:
           mkdir -p packages/@openfuse/fuse/node_modules
           rm -rf packages/@openfuse/fuse/node_modules/fuse-native
           ln -s /tmp/openfuse-fuse-deps/node_modules/fuse-native packages/@openfuse/fuse/node_modules/fuse-native
-
-      - name: Build Bun FFI bridge
-        if: matrix.runtime == 'bun'
-        run: |
-          cc -shared -o packages/@openfuse/fuse/src/bridge/fuse_bridge.so packages/@openfuse/fuse/src/bridge/fuse_bridge.c \
-            $(pkg-config --cflags --libs fuse) -fPIC -pthread
 
       - name: Build packages
         run: bun run build
@@ -101,3 +94,62 @@ jobs:
       - name: Run e2e mount test (Bun)
         if: matrix.runtime == 'bun'
         run: timeout 120s bun tests/mount.e2e.ts
+
+  e2e-packaged-bun-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install FUSE + build tooling (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse-dev fuse3 pkg-config python3 make g++
+          sudo modprobe fuse || true
+          ls -l /dev/fuse || true
+
+      - name: Install workspace dependencies (Bun)
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Pack workspace packages
+        run: |
+          mkdir -p /tmp/openfuse-packs
+          npm pack --pack-destination /tmp/openfuse-packs ./packages/@openfuse/fuse
+          npm pack --pack-destination /tmp/openfuse-packs ./packages/openfuse
+          ls -la /tmp/openfuse-packs
+
+      - name: Install tarballs in clean consumer project
+        run: |
+          mkdir -p /tmp/openfuse-consumer
+          cat > /tmp/openfuse-consumer/package.json <<'JSON'
+          {
+            "name": "openfuse-consumer-e2e",
+            "private": true,
+            "type": "module"
+          }
+          JSON
+
+          cd /tmp/openfuse-consumer
+          FUSE_TGZ=$(ls /tmp/openfuse-packs/openfuse-fuse-*.tgz | head -n 1)
+          OPENFUSE_TGZ=$(ls /tmp/openfuse-packs/openfuse-[0-9]*.tgz | head -n 1)
+
+          bun add "$FUSE_TGZ" "$OPENFUSE_TGZ"
+
+          test -f node_modules/@openfuse/fuse/dist/bridge/fuse_bridge.so
+          cp "$GITHUB_WORKSPACE/tests/mount.e2e.ts" ./mount.e2e.ts
+
+      - name: Run packaged e2e mount test (Bun)
+        run: |
+          cd /tmp/openfuse-consumer
+          timeout 120s env OPENFUSE_E2E_IMPORT=package bun ./mount.e2e.ts

@@ -1,5 +1,9 @@
 /**
- * Integration test for Node.js + fuse-native backend.
+ * Integration mount test.
+ *
+ * Default import mode: workspace build output.
+ * Set OPENFUSE_E2E_IMPORT=package to validate a packaged consumer install.
+ *
  * Run inside Docker with FUSE support:
  *   docker compose -f docker-compose.test.yml run test-node
  */
@@ -8,8 +12,12 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { setTimeout } from "node:timers/promises";
 
-// We need to import the built output
-const { createFileSystem } = await import("../packages/openfuse/dist/index.js");
+// By default, run against workspace build output.
+// For package-consumer smoke tests, set OPENFUSE_E2E_IMPORT=package.
+const importMode = process.env.OPENFUSE_E2E_IMPORT ?? "workspace-dist";
+const { createFileSystem } = importMode === "package"
+  ? await import("openfuse")
+  : await import("../packages/openfuse/dist/index.js");
 
 // Import MemoryFileSystem — but it's a .ts file, so we need the built version
 // For now, inline a minimal memory FS for testing

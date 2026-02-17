@@ -10,6 +10,17 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "files": [
+    "dist/**/*",
+    "src/bridge/fuse_bridge.c",
+    "src/fuse-native.d.ts"
+  ],
   "optionalDependencies": {
     "fuse-native": "^2.2.6"
   },
@@ -17,8 +28,10 @@
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "prebuild:bridge": "cc -shared -o src/bridge/fuse_bridge.so src/bridge/fuse_bridge.c $(pkg-config --cflags --libs fuse) -fPIC",
-    "build": "bun build ./src/index.ts --outdir ./dist --target node --splitting --external fuse-native --external bun:ffi && tsc -p ./tsconfig.json",
+    "build:bridge": "node ./scripts/build-bridge.mjs",
+    "prebuild:bridge": "node ./scripts/build-bridge.mjs",
+    "build": "rm -rf ./dist && bun build ./src/index.ts --outdir ./dist --target node --splitting --external fuse-native --external bun:ffi && tsc -p ./tsconfig.json && node ./scripts/build-bridge.mjs",
+    "prepack": "OPENFUSE_REQUIRE_BRIDGE=1 bun run build",
     "test": "bun test"
   }
 }

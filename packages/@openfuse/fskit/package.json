@@ -10,6 +10,12 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "os": [
+    "darwin"
+  ],
+  "files": [
+    "dist/**/*"
+  ],
   "dependencies": {
     "protobufjs": "^7.5.4"
   },
@@ -17,7 +23,8 @@
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --target node && tsc -p ./tsconfig.json",
+    "build": "rm -rf ./dist && bun build ./src/index.ts --outdir ./dist --target node && tsc -p ./tsconfig.json",
+    "prepack": "bun run build",
     "test": "bun test"
   }
 }
