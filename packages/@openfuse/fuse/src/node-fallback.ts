@@ -91,23 +91,37 @@ class NodeFallbackBackend implements Backend {
         }
       },
 
-      read(path: string, _fd: number, buf: Buffer, len: number, pos: number, cb: (bytesRead: number) => void) {
+      read(
+        path: string,
+        _fd: number,
+        buf: Buffer,
+        len: number,
+        pos: number,
+        cb: (code: number, bytesRead?: number) => void,
+      ) {
         try {
           const resolved = resolvePath(path, rootId, handlers);
           const data = handlers.read(resolved.itemId, BigInt(pos), BigInt(len));
           data.copy(buf);
-          cb(data.length);
+          cb(0, data.length);
         } catch (err) {
           cb(toErrno(err));
         }
       },
 
-      write(path: string, _fd: number, buf: Buffer, len: number, pos: number, cb: (bytesWritten: number) => void) {
+      write(
+        path: string,
+        _fd: number,
+        buf: Buffer,
+        len: number,
+        pos: number,
+        cb: (code: number, bytesWritten?: number) => void,
+      ) {
         try {
           const resolved = resolvePath(path, rootId, handlers);
           const data = buf.subarray(0, len);
           const written = handlers.write(resolved.itemId, BigInt(pos), Buffer.from(data));
-          cb(Number(written));
+          cb(0, Number(written));
         } catch (err) {
           cb(toErrno(err));
         }
