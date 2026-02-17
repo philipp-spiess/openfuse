@@ -18,6 +18,33 @@ class NodeFallbackBackend implements Backend {
     const rootId = rootItem.id;
 
     const ops = {
+      access(path: string, _mode: number, cb: (code: number) => void) {
+        try {
+          if (path !== "/") {
+            resolvePath(path, rootId, handlers);
+          }
+          cb(0);
+        } catch (err) {
+          cb(toErrno(err));
+        }
+      },
+
+      statfs(_path: string, cb: (code: number, stat?: Record<string, number>) => void) {
+        cb(0, {
+          bsize: 4096,
+          frsize: 4096,
+          blocks: 1024 * 1024,
+          bfree: 1024 * 1024,
+          bavail: 1024 * 1024,
+          files: 1024 * 1024,
+          ffree: 1024 * 1024,
+          favail: 1024 * 1024,
+          fsid: 1,
+          flag: 0,
+          namemax: 255,
+        });
+      },
+
       getattr(path: string, cb: (code: number, stat?: Record<string, unknown>) => void) {
         try {
           let itemId: bigint;
@@ -89,6 +116,39 @@ class NodeFallbackBackend implements Backend {
         } catch (err) {
           cb(toErrno(err));
         }
+      },
+
+      opendir(path: string, _flags: number, cb: (code: number, fd?: number) => void) {
+        try {
+          const dirId = path === "/" ? rootId : resolvePath(path, rootId, handlers).itemId;
+          const attrs = handlers.getAttributes(dirId);
+          if (attrs.type !== 2) {
+            throw Object.assign(new Error("ENOTDIR"), { errno: 20 });
+          }
+          cb(0, 0);
+        } catch (err) {
+          cb(toErrno(err));
+        }
+      },
+
+      release(_path: string, _fd: number, cb: (code: number) => void) {
+        cb(0);
+      },
+
+      releasedir(_path: string, _fd: number, cb: (code: number) => void) {
+        cb(0);
+      },
+
+      flush(_path: string, _fd: number, cb: (code: number) => void) {
+        cb(0);
+      },
+
+      fsync(_path: string, _fd: number, _datasync: number, cb: (code: number) => void) {
+        cb(0);
+      },
+
+      fsyncdir(_path: string, _fd: number, _datasync: number, cb: (code: number) => void) {
+        cb(0);
       },
 
       read(

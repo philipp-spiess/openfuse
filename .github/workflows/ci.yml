@@ -91,8 +91,10 @@ jobs:
             fi
             sleep 1
           done
+          set +e
           wait "$pid"
           status=$?
+          set -e
           cat /tmp/openfuse-node-e2e.log || true
           exit "$status"
 
