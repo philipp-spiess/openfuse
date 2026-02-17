@@ -79,7 +79,7 @@ jobs:
         if: matrix.runtime == 'node'
         run: |
           set -euo pipefail
-          node tests/node-mount-test.ts > /tmp/openfuse-node-e2e.log 2>&1 &
+          node tests/mount.e2e.ts > /tmp/openfuse-node-e2e.log 2>&1 &
           pid=$!
           deadline=$((SECONDS + 120))
           while kill -0 "$pid" 2>/dev/null; do
@@ -98,4 +98,4 @@ jobs:
 
       - name: Run e2e mount test (Bun)
         if: matrix.runtime == 'bun'
-        run: timeout 120s bun tests/node-mount-test.ts
+        run: timeout 120s bun tests/mount.e2e.ts

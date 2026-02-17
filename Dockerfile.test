@@ -27,4 +27,4 @@ RUN cd packages/@openfuse/fuse && \
     cc -shared -o src/bridge/fuse_bridge.so src/bridge/fuse_bridge.c \
     $(pkg-config --cflags --libs fuse) -fPIC -pthread
 
-CMD ["node", "tests/node-mount-test.ts"]
+CMD ["node", "tests/mount.e2e.ts"]

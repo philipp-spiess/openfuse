@@ -3,7 +3,7 @@
  * Run inside Docker with FUSE support:
  *   docker compose -f docker-compose.test.yml run test-node
  */
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync, unlinkSync, rmdirSync, statSync, rmSync } from "node:fs";
+import { mkdtemp, mkdir, readFile, readdir, rm, rmdir, stat, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { setTimeout } from "node:timers/promises";
@@ -138,7 +138,7 @@ async function main() {
   memfs.write(seedItem.id, 0n, Buffer.from("hello from openfuse!"));
 
   const fs = createFileSystem(memfs);
-  const mountPoint = mkdtempSync(join(tmpdir(), "openfuse-test-"));
+  const mountPoint = await mkdtemp(join(tmpdir(), "openfuse-test-"));
 
   console.log(`Mounting at ${mountPoint}...`);
   await fs.mount(mountPoint);
@@ -147,37 +147,37 @@ async function main() {
   // Small delay for FUSE to be ready
   await setTimeout(200);
 
-  // Test 1: readdir
-  const entries = readdirSync(mountPoint);
+  // Test 1: readdir (async to avoid deadlocking the event loop while serving FUSE callbacks)
+  const entries = await readdir(mountPoint);
   console.log(`readdir: ${JSON.stringify(entries)}`);
   assert(entries.includes("seed.txt"), "seed.txt should be in readdir");
 
   // Test 2: read existing file
-  const content = readFileSync(join(mountPoint, "seed.txt"), "utf8");
+  const content = await readFile(join(mountPoint, "seed.txt"), "utf8");
   console.log(`read seed.txt: "${content}"`);
   assert(content === "hello from openfuse!", "seed.txt content mismatch");
 
   // Test 3: write new file
-  writeFileSync(join(mountPoint, "new.txt"), "written via node:fs!");
-  const newContent = readFileSync(join(mountPoint, "new.txt"), "utf8");
+  await writeFile(join(mountPoint, "new.txt"), "written via node:fs!");
+  const newContent = await readFile(join(mountPoint, "new.txt"), "utf8");
   console.log(`write+read new.txt: "${newContent}"`);
   assert(newContent === "written via node:fs!", "new.txt content mismatch");
 
   // Test 4: mkdir
-  mkdirSync(join(mountPoint, "mydir"));
-  const stat = statSync(join(mountPoint, "mydir"));
-  console.log(`mkdir mydir: isDirectory=${stat.isDirectory()}`);
-  assert(stat.isDirectory(), "mydir should be a directory");
+  await mkdir(join(mountPoint, "mydir"));
+  const dirStat = await stat(join(mountPoint, "mydir"));
+  console.log(`mkdir mydir: isDirectory=${dirStat.isDirectory()}`);
+  assert(dirStat.isDirectory(), "mydir should be a directory");
 
   // Test 5: unlink
-  unlinkSync(join(mountPoint, "new.txt"));
-  const afterUnlink = readdirSync(mountPoint);
+  await unlink(join(mountPoint, "new.txt"));
+  const afterUnlink = await readdir(mountPoint);
   console.log(`after unlink new.txt: ${JSON.stringify(afterUnlink)}`);
   assert(!afterUnlink.includes("new.txt"), "new.txt should be gone");
 
   // Test 6: rmdir
-  rmdirSync(join(mountPoint, "mydir"));
-  const afterRmdir = readdirSync(mountPoint);
+  await rmdir(join(mountPoint, "mydir"));
+  const afterRmdir = await readdir(mountPoint);
   console.log(`after rmdir mydir: ${JSON.stringify(afterRmdir)}`);
   assert(!afterRmdir.includes("mydir"), "mydir should be gone");
 
@@ -186,7 +186,7 @@ async function main() {
   console.log("Unmounted!");
 
   // Cleanup
-  rmSync(mountPoint, { recursive: true, force: true });
+  await rm(mountPoint, { recursive: true, force: true });
 
   console.log("\n✅ All tests passed!");
 }

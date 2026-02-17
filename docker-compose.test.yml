@@ -10,4 +10,4 @@ services:
       - "/dev/fuse:/dev/fuse"
     security_opt:
       - apparmor:unconfined
-    command: ["node", "tests/node-mount-test.ts"]
+    command: ["node", "tests/mount.e2e.ts"]
